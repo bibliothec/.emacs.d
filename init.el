@@ -51,6 +51,8 @@
 (setq-default default-tab-width 4)
 ;;初期画面でwelcome画面の表示を消す方法
 (setq inhibit-startup-message t)
+;; scratchの初期メッセージ消去
+(setq initial-scratch-message "")
 ;;画面の下のバーで、今どこの行、列にいるかを表示させる。ex)Top(35,73)など
 (line-number-mode t)
 (column-number-mode t)
@@ -107,6 +109,7 @@
 ;;#のバックアップファアイルを作らない
 (setq auto-save-default nil)
 
+
 (set-face-foreground 'default "#f5f5f5")
 
 ;; , を入力したらスペース追加
@@ -142,6 +145,8 @@
 (use-package lsp-ui
   :ensure t)
 (use-package company
+  :ensure t)
+(use-package neotree
   :ensure t)
 
 
@@ -215,15 +220,19 @@
   (highlight-indent-guides-responsive 'top)
   (highlight-indent-guides-delay 0.1))
 
+;; neotree（サイドバー）
+(use-package neotree
+  :ensure t)
+(require 'neotree)
+(global-set-key "\C-o" 'neotree-toggle)
 
-(add-hook 'go-mode-hook #'lsp)
+
 ;; python
 (use-package lsp-pyright
   :ensure t
   :hook (python-mode . (lambda ()
                           (require 'lsp-pyright)
                           (lsp))))  ; or lsp-deferred
-
 
 ;;rust
 (use-package rust-mode
