@@ -4,12 +4,9 @@
 (require 'package)
 ;; package.elが管理していないelisp置き場
 (add-to-list 'load-path "~/.emacs.d/elisp/")
+;;通信エラー用
 (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
 ;; MELPAを追加(package.el)
-;;(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/")t)
-;;(add-to-list 'package-archives '("stable-melpa" . "https://stable.melpa.org/packages/")t)
-;;(add-to-list 'package-archives  '("marmalade" . "http://marmalade-repo.org/packages/")t)
-;;(fset 'package-desc-vers 'package--ac-desc-version)
 (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
 (add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/") t)
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
@@ -35,8 +32,13 @@
 ;; カーソルを点滅させない
 (blink-cursor-mode 0)
 ;; scroll一行づつ
-;;(setq-default scroll-step 1)
 (setq scroll-conservatively 1)
+;; スクロール開始のマージンの行数
+ (setq scroll-margin 10)
+;; 1 画面スクロール時に重複させる行数
+ (setq next-screen-context-lines 10)
+ ;; 1 画面スクロール時にカーソルの画面上の位置をなるべく変えない
+ (setq scroll-preserve-screen-position t)
 ;; C-k で後ろ行を削除する
 (setq kill-whole-line t)
 ;; エラー音をならなくする
@@ -103,6 +105,8 @@
 ;; shift+カーソルキーでバッファ切り替え
 (windmove-default-keybindings)
 (setq windmove-wrap-around t)
+ ;; png, jpg などのファイルを画像として表示
+ (setq auto-image-file-mode t)
 
 ;;バックグラウンドの色を変える
 ;;(set-face-background 'default "#303030")
@@ -154,9 +158,7 @@
     (set-face-attribute 'default nil 
                     :font "Noto Sans Mono CJK JP-12"
                     :width 'expanded)
-    (setq face-font-rescale-alist
-          '(("Sans Mono CJK JP-12" . 4.0)))
-
+ 
     ;;システムパスを与える
     (use-package exec-path-from-shell
     :ensure t
