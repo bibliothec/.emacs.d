@@ -14,6 +14,9 @@
 (add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/") t)
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
 (add-to-list 'package-archives '("ELPA" . "http://tromey.com/elpa/") t)
+;; packageのリフレッシュ
+;;(when (not package-archive-contents)
+;;  (package-refresh-contents))
 ;; package.elの初期化
 (package-initialize)
 ;;上のワーニング回避
@@ -32,7 +35,8 @@
 ;; カーソルを点滅させない
 (blink-cursor-mode 0)
 ;; scroll一行づつ
-(setq-default scroll-step 1)
+;;(setq-default scroll-step 1)
+(setq scroll-conservatively 1)
 ;; C-k で後ろ行を削除する
 (setq kill-whole-line t)
 ;; エラー音をならなくする
@@ -45,6 +49,8 @@
 (menu-bar-mode 0)
 ;; スクロールバーを表示
 (setq scroll-bar-mode t)
+;; 現在行の強調:
+(global-hl-line-mode t)
 ;;タブ文字の削除
 (setq-default indent-tabs-mode nil)
 ;;タブの大きさを指定
@@ -75,13 +81,6 @@
 (global-set-key"\C-h" 'delete-backward-char)
 ;; 行番号表示(Emacs26以降)
 (global-display-line-numbers-mode t)
-;;テーマ
-(load-theme 'gruvbox t)
-
-;;現在いる行を目立たせる
-;;(global-hl-line-mode)
-;;(custom-set-faces
- ;;'(hl-line ((t (:background "SteelBlue4")))))
 ;;対応する括弧のハイライト
 (show-paren-mode t)
 (setq show-paren-delay 0)
@@ -94,9 +93,6 @@
 (setq show-paren-style 'mixed)
 ;;対応する括弧だけをハイライト(setq show-paren-style 'parenthesis)
 ;;括弧で囲まれた部分をハイライト(setq show-paren-style 'expression)
-;;バックグラウンドの色を変える
-(set-face-background 'default "#303030")
-;;色は#303030の部分を変えることで他の色に変更可能。
 ;;バックグラウンドの透過率の設定
 (add-to-list 'default-frame-alist '(alpha . (1.0 1.0)))
 ;アルファ値(0.0 = 完全透明、1.0 = 不透明)で指定できる。
@@ -109,8 +105,11 @@
 ;;#のバックアップファアイルを作らない
 (setq auto-save-default nil)
 
+;;バックグラウンドの色を変える
+;;(set-face-background 'default "#303030")
+;;色は#303030の部分を変えることで他の色に変更可能。
 
-(set-face-foreground 'default "#f5f5f5")
+;;(set-face-foreground 'default "#f5f5f5")
 
 ;; , を入力したらスペース追加
 (defun my-insert-comma ()
@@ -121,13 +120,7 @@
 (global-set-key (kbd ",") 'my-insert-comma)
 
 
-;; 日本語フォントを設定
 
-(set-face-attribute 'default nil 
-                    :font "Noto Sans Mono CJK JP-12"
-                    :width 'expanded)
-(setq face-font-rescale-alist
-      '(("Sans Mono CJK JP-12" . 4.0)))
 
 
 
@@ -139,16 +132,13 @@
 (eval-when-compile
   (require 'use-package))
 
-;;パケージの自動インストール
-(use-package lsp-mode
-  :ensure t)
-(use-package lsp-ui
-  :ensure t)
-(use-package company
-  :ensure t)
-(use-package neotree
-  :ensure t)
 
+;; 日本語フォントを設定
+(set-face-attribute 'default nil 
+                    :font "Noto Sans Mono CJK JP-12"
+                    :width 'expanded)
+(setq face-font-rescale-alist
+      '(("Sans Mono CJK JP-12" . 4.0)))
 
 ;;システムパスを与える
 (use-package exec-path-from-shell
@@ -157,6 +147,9 @@
   (exec-path-from-shell-initialize))
 
 
+;;パケージの自動インストール
+(use-package lsp-mode
+  :ensure t)
 ;; lsp-mode
 (require 'lsp-mode)
 (setq gc-cons-threshold 100000000)
@@ -167,7 +160,18 @@
 (setq lsp-ui-imenu-enable t)
 (setq lsp-headerline-breadcrumb-enable t)
 
+;; lsp-ui
+(use-package lsp-ui
+  :ensure t)
+(require 'lsp-ui)
+(setq lsp-ui-imenu-enable t)
+(setq lsp-headerline-breadcrumb-enable t)
+(add-hook 'lsp-mode-hook 'lsp-ui-mode)
+
+
 ;; company(補完)
+(use-package company
+  :ensure t)
 (require 'company)
 (global-company-mode t)
 (setq company-idle-delay 0)
@@ -178,17 +182,110 @@
 (define-key company-active-map (kbd "C-p") 'company-select-previous)
 (define-key company-active-map (kbd "C-s") 'company-filter-candidates)
 
+
+;;tmuxライク
+(use-package ace-window
+  :ensure t
+  :bind (("M-o" . ace-window))
+  :custom
+  ;; キー操作による移動先の表示形式を指定
+  (aw-leading-char-style 'char)
+  ;; カスタマイズ可能な移動先候補の表示位置を指定
+  (aw-dispatch-always t)
+  ;; フレーム（ウィンドウ）が1つの場合にフレームを分割しない
+  (aw-dispatch-alist
+   '((?x aw-delete-window "Ace - Delete Window")
+     (?c aw-swap-window "Ace - Swap Window")
+     (?n aw-flip-window)
+     (?v aw-split-window-vert "Ace - Split Vert Window")
+     (?h aw-split-window-horz "Ace - Split Horz Window")
+     (?m delete-other-windows "Ace - Maximize Window")
+     (?g delete-other-windows)))
+  ;; カスタマイズ可能な移動先候補の表示順序を指定
+  (aw-dispatch-ordered-combination t))
+
+
+;;neotree
+(use-package neotree
+  :ensure t)
+
+;; vim(c-zで切り替え)
+(use-package evil
+     :ensure t
+     :init
+     (evil-mode 1))
+;; Insertモード時にキーバインドを切り替える
+(setq evil-disable-insert-state-bindings t)
+;; Emacs起動時にはemacsモードで開始する
+(setq evil-default-state 'emacs)
+
+
+;;テーマ
+(use-package atom-one-dark-theme
+  :ensure t)
+(load-theme 'atom-one-dark t)
+(use-package gruvbox-theme
+  :ensure t)
+(load-theme 'gruvbox t)
+
+
+
+;;icon
+(use-package all-the-icons
+    :ensure t)
+
+;; modeline
+(use-package powerline
+ :ensure t
+ :config
+ (powerline-default-theme))
+
+
+;; minimap
+(use-package minimap
+  :ensure t
+  :init
+  (minimap-mode)
+  :config
+  (setq minimap-window-location 'right
+        minimap-update-delay 0.2
+        minimap-minimum-width 20
+        minimap-automatically-delete-window nil)
+  (custom-set-faces
+     '(minimap-active-region-background
+      ((((background dark)) (:background "#555555555555"))
+    (t (:background "#C847D8FEFFFF"))) :group 'minimap))
+  :bind ("<f9>" . minimap-mode))
+
+
+;;キーバインどのガイド
+(use-package which-key
+    :ensure t
+    :diminish which-key-mode
+    :hook (after-init . which-key-mode))
+
+;;カーソルを一瞬光らせる
+ (use-package beacon
+    :ensure t
+    :custom
+    (beacon-color "yellow")
+    :config
+    (beacon-mode 1))
+
+;;git
+(use-package magit
+  :ensure t
+  :bind (("C-x g" . magit-status))
+  :config
+  (setq magit-completing-read-function 'ivy-completing-read)
+  (setq magit-diff-refine-hunk t)
+  (setq magit-push-always-verify nil))
+
 ;;構文チェッカー:
 (use-package flycheck
   :ensure t
   :hook (prog-mode . flycheck-mode))
 
-
-;; lsp-ui
-(require 'lsp-ui)
-(setq lsp-ui-imenu-enable t)
-(setq lsp-headerline-breadcrumb-enable t)
-(add-hook 'lsp-mode-hook 'lsp-ui-mode)
 
 ;;カッコの補完
 (use-package smartparens
@@ -329,7 +426,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(lsp-mode use-package zenburn-theme yaml-mode yafolding web-mode web-beautify vterm volatile-highlights vi-tilde-fringe typescript-mode spinner smartparens smart-mode-line rainbow-mode rainbow-delimiters racer python-mode protobuf-mode plantuml-mode neotree mozc monokai-theme minimap melancholy-theme markdown-preview-mode leaf-keywords ivy-prescient hydra highlight-indent-guides gruvbox-theme go-impl gcmh flycheck-rust emmet-mode el-get dracula-theme dockerfile-mode beacon auto-complete afternoon-theme)))
+   '(which-key dashboard atom-one-dark-theme powerline-evil lsp-mode use-package zenburn-theme yaml-mode yafolding web-mode web-beautify vterm volatile-highlights vi-tilde-fringe typescript-mode spinner smartparens smart-mode-line rainbow-mode rainbow-delimiters racer python-mode protobuf-mode plantuml-mode neotree mozc monokai-theme minimap melancholy-theme markdown-preview-mode leaf-keywords ivy-prescient hydra highlight-indent-guides gruvbox-theme go-impl gcmh flycheck-rust emmet-mode el-get dracula-theme dockerfile-mode beacon auto-complete afternoon-theme)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
