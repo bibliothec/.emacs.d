@@ -96,14 +96,13 @@
 ;;バックグラウンドの透過率の設定
 (add-to-list 'default-frame-alist '(alpha . (1.0 1.0)))
 ;アルファ値(0.0 = 完全透明、1.0 = 不透明)で指定できる。
-;;Ctrl-jで、日本語入力を可能にする(takadaqのみ)
-(global-set-key (kbd "C-j") 'toggle-input-method)
-;;日本語を使えるようにする(上の設定とセットでするべき？)
-(set-language-environment "Japanese")
-;;~のバックアップファアイルを作らない
+;;;~のバックアップファアイルを作らない
 (setq make-backup-files nil)
 ;;#のバックアップファアイルを作らない
 (setq auto-save-default nil)
+;; shift+カーソルキーでバッファ切り替え
+(windmove-default-keybindings)
+(setq windmove-wrap-around t)
 
 ;;バックグラウンドの色を変える
 ;;(set-face-background 'default "#303030")
@@ -132,19 +131,40 @@
 (eval-when-compile
   (require 'use-package))
 
+;Ctrl-jで、日本語入力を可能にする(takadaqのみ)
+(global-set-key (kbd "C-j") 'toggle-input-method)
+;;日本語を使えるようにする(上の設定とセットでするべき？)
+(set-language-environment "Japanese")
 
-;; 日本語フォントを設定
-(set-face-attribute 'default nil 
+
+;; Windowsの場合の設定
+(when (eq system-type 'windows-nt)
+  ;; Windows専用の設定をここに書く
+  )
+
+;; macOSの場合の設定
+(when (eq system-type 'darwin)
+  ;; macOS専用の設定をここに書く
+  )
+
+;; Linuxの場合の設定
+(when (eq system-type 'gnu/linux)
+     ;; Linux専用の設定をここに書く
+    ;; 日本語フォントを設定
+    (set-face-attribute 'default nil 
                     :font "Noto Sans Mono CJK JP-12"
                     :width 'expanded)
-(setq face-font-rescale-alist
-      '(("Sans Mono CJK JP-12" . 4.0)))
+    (setq face-font-rescale-alist
+          '(("Sans Mono CJK JP-12" . 4.0)))
 
-;;システムパスを与える
-(use-package exec-path-from-shell
-  :ensure t
-  :config
-  (exec-path-from-shell-initialize))
+    ;;システムパスを与える
+    (use-package exec-path-from-shell
+    :ensure t
+    :config
+    (exec-path-from-shell-initialize))
+  )
+
+
 
 
 ;;パケージの自動インストール
