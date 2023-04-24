@@ -32,13 +32,24 @@
 ;; カーソルを点滅させない
 (blink-cursor-mode 0)
 ;; scroll一行づつ
-(setq scroll-conservatively 1)
+(setq scroll-conservatively 1000)
+(setq scroll-step 1)
 ;; スクロール開始のマージンの行数
- (setq scroll-margin 10)
+(setq scroll-margin 10)
 ;; 1 画面スクロール時に重複させる行数
- (setq next-screen-context-lines 10)
- ;; 1 画面スクロール時にカーソルの画面上の位置をなるべく変えない
- (setq scroll-preserve-screen-position t)
+(setq next-screen-context-lines 10)
+;; 1 画面スクロール時にカーソルの画面上の位置をなるべく変えない
+(setq scroll-preserve-screen-position t)
+; 1行ずつ水平スクロールする設定
+(setq hscroll-step 1)
+(setq hscroll-margin 20)
+;;(setq hl-line-face 'underline)
+;;その行だけスクロール
+;;(setq auto-hscroll-mode 'current-line)
+;; 拡大しているときに1行スクロールする設定
+(setq mouse-wheel-follow-mouse 't)
+;; スクロールの速度調整
+(setq mouse-wheel-progressive-speed nil)
 ;; C-k で後ろ行を削除する
 (setq kill-whole-line t)
 ;; エラー音をならなくする
@@ -107,6 +118,7 @@
 (setq windmove-wrap-around t)
  ;; png, jpg などのファイルを画像として表示
  (setq auto-image-file-mode t)
+
 
 ;;バックグラウンドの色を変える
 ;;(set-face-background 'default "#303030")
