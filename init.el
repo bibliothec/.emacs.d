@@ -135,6 +135,10 @@
 (global-set-key (kbd ",") 'my-insert-comma)
 
 
+;; Make Alt+n behave like C-↓
+(global-set-key (kbd "M-n") (kbd "<C-down>"))
+;; Make Alt+p behave like C-↑
+(global-set-key (kbd "M-p") (kbd "<C-up>"))
 
 
 
@@ -212,6 +216,9 @@
 (setq company-minimum-prefix-length 1)
 (setq company-selection-wrap-around t)
 (setq completion-ignore-case t)
+;; 基本的に候補は無選択状態から始める。
+;; 誤って確定してしまうのを防ぐ。
+;;(setq-default company-selection-default nil)
 (define-key company-active-map (kbd "C-n") 'company-select-next)
 (define-key company-active-map (kbd "C-p") 'company-select-previous)
 (define-key company-active-map (kbd "C-s") 'company-filter-candidates)
@@ -252,6 +259,24 @@
 (setq evil-disable-insert-state-bindings t)
 ;; Emacs起動時にはemacsモードで開始する
 (setq evil-default-state 'emacs)
+;; モードラインにevil-modeのときはvimmodeと表示する
+(setq evil-mode-line-format '(concat " " (:eval (if (evil-normal-state-p) "vimmode" " "))))
+
+(setq evil-normal-state-tag   (propertize " N " 'face '((:background "green" :foreground "black")))
+      evil-emacs-state-tag    (propertize " E " 'face '((:background "orange" :foreground "black")))
+      evil-insert-state-tag   (propertize " I " 'face '((:background "red") :foreground "white"))
+      evil-motion-state-tag   (propertize " M " 'face '((:background "blue") :foreground "white")))
+
+
+;;数の増減
+(use-package evil-numbers
+  :bind
+  (("C-c +" . evil-numbers/inc-at-pt)
+   ("C-c -" . evil-numbers/dec-at-pt)))
+(define-key evil-normal-state-map (kbd "C-a") 'evil-numbers/inc-at-pt)
+(define-key evil-visual-state-map (kbd "C-a") 'evil-numbers/inc-at-pt)
+(define-key evil-normal-state-map (kbd "C-x") 'evil-numbers/dec-at-pt)
+(define-key evil-visual-state-map (kbd "C-x") 'evil-numbers/dec-at-pt)
 
 
 ;;テーマ
@@ -272,7 +297,13 @@
 (use-package powerline
  :ensure t
  :config
- (powerline-default-theme))
+ (powerline-center-evil-theme))
+
+(use-package powerline-evil
+ :ensure t
+ :config
+ (powerline-evil-vim-theme))
+
 
 
 ;; minimap
@@ -460,11 +491,11 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(which-key dashboard atom-one-dark-theme powerline-evil lsp-mode use-package zenburn-theme yaml-mode yafolding web-mode web-beautify vterm volatile-highlights vi-tilde-fringe typescript-mode spinner smartparens smart-mode-line rainbow-mode rainbow-delimiters racer python-mode protobuf-mode plantuml-mode neotree mozc monokai-theme minimap melancholy-theme markdown-preview-mode leaf-keywords ivy-prescient hydra highlight-indent-guides gruvbox-theme go-impl gcmh flycheck-rust emmet-mode el-get dracula-theme dockerfile-mode beacon auto-complete afternoon-theme)))
+   '(evil-numbers which-key dashboard atom-one-dark-theme powerline-evil lsp-mode use-package zenburn-theme yaml-mode yafolding web-mode web-beautify vterm volatile-highlights vi-tilde-fringe typescript-mode spinner smartparens smart-mode-line rainbow-mode rainbow-delimiters racer python-mode protobuf-mode plantuml-mode neotree mozc monokai-theme minimap melancholy-theme markdown-preview-mode leaf-keywords ivy-prescient hydra highlight-indent-guides gruvbox-theme go-impl gcmh flycheck-rust emmet-mode el-get dracula-theme dockerfile-mode beacon auto-complete afternoon-theme)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(minimap-active-region-background ((((background dark)) (:background "#555555555555")) (t (:background "#C847D8FEFFFF"))) nil 'minimap))
 
