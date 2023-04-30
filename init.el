@@ -464,6 +464,10 @@
   :ensure nil
   :mode "\\.css\\'")
 
+;;markdown preview C-c C-c C-p
+(add-hook 'markdown-mode-hook 'markdown-live-preview-mode)
+
+
 ;;java/typescript
 (use-package lsp-mode
   :hook ((typescript-mode js-mode) . lsp)
