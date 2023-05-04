@@ -127,12 +127,8 @@
 ;;(set-face-foreground 'default "#f5f5f5")
 
 ;; , を入力したらスペース追加
-(defun my-insert-comma ()
-  "Insert comma and space."
-  (interactive)
-  (insert ", ")
-  )
-(global-set-key (kbd ",") 'my-insert-comma)
+(global-set-key (kbd ",") (lambda () (interactive) (insert ", ")))
+
 
 
 ;; Make Alt+n behave like C-↓
@@ -152,35 +148,11 @@
   (require 'use-package))
 
 ;Ctrl-jで、日本語入力を可能にする(takadaqのみ)
-(global-set-key (kbd "C-j") 'toggle-input-method)
+;;(global-set-key (kbd "C-j") 'toggle-input-method)
 ;;日本語を使えるようにする(上の設定とセットでするべき？)
 (set-language-environment "Japanese")
 
 
-;; Windowsの場合の設定
-(when (eq system-type 'windows-nt)
-  ;; Windows専用の設定をここに書く
-  )
-
-;; macOSの場合の設定
-(when (eq system-type 'darwin)
-  ;; macOS専用の設定をここに書く
-  )
-
-;; Linuxの場合の設定
-(when (eq system-type 'gnu/linux)
-     ;; Linux専用の設定をここに書く
-    ;; 日本語フォントを設定
-    (set-face-attribute 'default nil 
-                    :font "Noto Sans Mono CJK JP-12"
-                    :width 'expanded)
- 
-    ;;システムパスを与える
-    (use-package exec-path-from-shell
-    :ensure t
-    :config
-    (exec-path-from-shell-initialize))
-  )
 
 
 
@@ -259,13 +231,22 @@
 (setq evil-disable-insert-state-bindings t)
 ;; Emacs起動時にはemacsモードで開始する
 (setq evil-default-state 'emacs)
+;; terminalを開いたときにevilのinsertにならないように
+(evil-set-initial-state 'term-mode 'emacs)
+(add-to-list 'evil-emacs-state-modes 'term-mode)
 ;; モードラインにevil-modeのときはvimmodeと表示する
 (setq evil-mode-line-format '(concat " " (:eval (if (evil-normal-state-p) "vimmode" " "))))
-
 (setq evil-normal-state-tag   (propertize " N " 'face '((:background "green" :foreground "black")))
       evil-emacs-state-tag    (propertize " E " 'face '((:background "orange" :foreground "black")))
       evil-insert-state-tag   (propertize " I " 'face '((:background "red") :foreground "white"))
       evil-motion-state-tag   (propertize " M " 'face '((:background "blue") :foreground "white")))
+
+(use-package multi-term
+  :bind (:map global-map
+              ("C-x t" . multi-term-dedicated-toggle)
+              ("C-x T" . multi-term))
+)
+
 
 
 ;;数の増減
@@ -345,6 +326,14 @@
   (setq magit-completing-read-function 'ivy-completing-read)
   (setq magit-diff-refine-hunk t)
   (setq magit-push-always-verify nil))
+
+;;undo, redoを便利に
+(use-package undo-tree
+  :ensure t
+  :bind (("M-/" . undo-tree-redo))
+  :config
+  (global-undo-tree-mode))
+
 
 ;;構文チェッカー:
 (use-package flycheck
@@ -489,13 +478,44 @@
 
 
 
+;; Windowsの場合の設定
+(when (eq system-type 'windows-nt)
+  ;; Windows専用の設定をここに書く
+  (setq multi-term-program "powershell.exe")
+  )
+
+;; macOSの場合の設定
+(when (eq system-type 'darwin)
+  ;; macOS専用の設定をここに書く
+  )
+
+;; Linuxの場合の設定
+(when (eq system-type 'gnu/linux)
+     ;; Linux専用の設定をここに書く
+    ;; 日本語フォントを設定
+    (set-face-attribute 'default nil 
+                    :font "Noto Sans Mono CJK JP-12"
+                    :width 'expanded)
+ 
+    ;;システムパスを与える
+    (use-package exec-path-from-shell
+    :ensure t
+    :config
+    (exec-path-from-shell-initialize))
+
+    (setq multi-term-program "/bin/bash")
+  )
+
+
+
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(evil-numbers which-key dashboard atom-one-dark-theme powerline-evil lsp-mode use-package zenburn-theme yaml-mode yafolding web-mode web-beautify vterm volatile-highlights vi-tilde-fringe typescript-mode spinner smartparens smart-mode-line rainbow-mode rainbow-delimiters racer python-mode protobuf-mode plantuml-mode neotree mozc monokai-theme minimap melancholy-theme markdown-preview-mode leaf-keywords ivy-prescient hydra highlight-indent-guides gruvbox-theme go-impl gcmh flycheck-rust emmet-mode el-get dracula-theme dockerfile-mode beacon auto-complete afternoon-theme)))
+   '(multi-term evil-numbers which-key dashboard atom-one-dark-theme powerline-evil lsp-mode use-package zenburn-theme yaml-mode yafolding web-mode web-beautify vterm volatile-highlights vi-tilde-fringe typescript-mode spinner smartparens smart-mode-line rainbow-mode rainbow-delimiters racer python-mode protobuf-mode plantuml-mode neotree mozc monokai-theme minimap melancholy-theme markdown-preview-mode leaf-keywords ivy-prescient hydra highlight-indent-guides gruvbox-theme go-impl gcmh flycheck-rust emmet-mode el-get dracula-theme dockerfile-mode beacon auto-complete afternoon-theme)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
