@@ -118,6 +118,13 @@
 (setq windmove-wrap-around t)
  ;; png, jpg などのファイルを画像として表示
  (setq auto-image-file-mode t)
+;;c-x c-fでフォルダも作れるようにする
+(setq confirm-nonexistent-file-or-buffer nil)
+(defadvice find-file (before auto-create-directory activate)
+  (unless (file-exists-p (ad-get-arg 0))
+    (let ((dir (file-name-directory (ad-get-arg 0))))
+      (unless (file-exists-p dir)
+        (make-directory dir t)))))
 
 
 ;;バックグラウンドの色を変える
@@ -218,9 +225,15 @@
   (aw-dispatch-ordered-combination t))
 
 
-;;neotree
-(use-package neotree
-  :ensure t)
+;;ddskk
+(use-package ddskk
+  :ensure t
+  :bind (("C-x C-j" . skk-mode)))
+(setq skk-preload nil)
+(use-package ddskk-posframe
+  :ensure t
+  :after ddskk
+  :hook (skk-mode . ddskk-posframe-mode))
 
 ;; vim(c-zで切り替え)
 (use-package evil
@@ -241,13 +254,20 @@
       evil-insert-state-tag   (propertize " I " 'face '((:background "red") :foreground "white"))
       evil-motion-state-tag   (propertize " M " 'face '((:background "blue") :foreground "white")))
 
+;;マルチターミナル
 (use-package multi-term
+  :ensure t
   :bind (:map global-map
               ("C-x t" . multi-term-dedicated-toggle)
               ("C-x T" . multi-term))
 )
 
-
+;;C-a, C-eの挙動変化
+(use-package mwim
+  :ensure t
+  :bind
+  (("C-a" . mwim-beginning-of-code-or-line)
+   ("C-e" . mwim-end-of-code-or-line)))
 
 ;;数の増減
 (use-package evil-numbers
@@ -290,8 +310,8 @@
 ;; minimap
 (use-package minimap
   :ensure t
-  :init
-  (minimap-mode)
+  ;;:init
+  ;;(minimap-mode)
   :config
   (setq minimap-window-location 'right
         minimap-update-delay 0.2
@@ -302,6 +322,17 @@
       ((((background dark)) (:background "#555555555555"))
     (t (:background "#C847D8FEFFFF"))) :group 'minimap))
   :bind ("<f9>" . minimap-mode))
+
+;;minimapの関数版
+  (use-package imenu-list
+    :ensure t
+    :bind
+    ("<f10>" . imenu-list-smart-toggle)
+    :custom-face
+    (imenu-list-entry-face-1 ((t (:foreground "white"))))
+    :custom
+    (imenu-list-focus-after-activation t)
+    (imenu-list-auto-resize nil))
 
 
 ;;キーバインどのガイド
@@ -318,7 +349,7 @@
     :config
     (beacon-mode 1))
 
-;;git
+;;git操作
 (use-package magit
   :ensure t
   :bind (("C-x g" . magit-status))
@@ -326,6 +357,20 @@
   (setq magit-completing-read-function 'ivy-completing-read)
   (setq magit-diff-refine-hunk t)
   (setq magit-push-always-verify nil))
+;;gitの差分可視化
+(use-package git-gutter
+    :ensure t
+    :custom
+    (git-gutter:modified-sign "~")
+    (git-gutter:added-sign    "+")
+    (git-gutter:deleted-sign  "-")
+    :custom-face
+    (git-gutter:modified ((t (:background "#f1fa8c"))))
+    (git-gutter:added    ((t (:background "#50fa7b"))))
+    (git-gutter:deleted  ((t (:background "#ff79c6"))))
+    :config
+    (global-git-gutter-mode +1))
+
 
 ;;undo, redoを便利に
 (use-package undo-tree
@@ -371,11 +416,105 @@
   (highlight-indent-guides-responsive 'top)
   (highlight-indent-guides-delay 0.1))
 
+;;コメントアウトの拡張
+(use-package comment-dwim-2
+  :ensure t
+  :bind ("M-;" . comment-dwim-2)
+  :config
+  (setq comment-dwim-2--inline-comment-behavior 'reindent-comment))
+
+
 ;; neotree（サイドバー）
 (use-package neotree
   :ensure t)
 (require 'neotree)
 (global-set-key "\C-o" 'neotree-toggle)
+
+
+;;補完インターフェース
+(use-package ivy
+  :ensure t
+  :diminish ivy-mode
+  :config
+  (ivy-mode 1))
+(setq ivy-use-virtual-buffers nil)
+(setq enable-recursive-minibuffers t)
+(setq ivy-use-selectable-prompt t)
+(setq ivy-re-builders-alist 
+        '((swiper . ivy--regex-plus)
+        (t      . ivy--regex-fuzzy)))
+(setq ivy-re-builders-alist
+      '((t . ivy--regex-ignore-order)))
+;;ivyのプリセット
+(use-package counsel
+  :ensure t
+  :config
+  (ivy-mode 1)
+  (global-set-key (kbd "M-x") 'counsel-M-x)
+  (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+  (global-set-key (kbd "C-x b") 'counsel-switch-buffer)
+  (global-set-key (kbd "C-c f") 'counsel-git)
+  (global-set-key (kbd "C-c g") 'counsel-git-grep))
+;;文字列検索
+(use-package swiper
+  :ensure t
+  :bind (("C-s" . swiper)))
+;;ivyをリッチに
+(use-package ivy-rich
+  :ensure t
+  :init
+  (ivy-rich-mode 1))
+;;ivyをフレーム表示
+(use-package ivy-posframe
+  :ensure t
+  :config
+  (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-center)))
+  (ivy-posframe-mode 1))
+
+;;現在のウィンドウをズーム(minimapも拡大されてしまう問題)
+;;(use-package zoom
+;;  :ensure t
+;;  :config
+;;  (setq zoom-size '(0.618 . 0.618))
+;;  (zoom-mode t))
+
+
+;;ページブレイクライン
+;;(use-package page-break-lines
+;;  :ensure t
+;;  :config
+;;  (global-page-break-lines-mode))
+;;dashboard
+;;(use-package projectile
+;;  :ensure t)
+;;(use-package dashboard
+;;  :ensure t
+;;  :diminish
+;;    (dashboard-mode page-break-lines-mode)
+;;  :config
+;;  (dashboard-setup-startup-hook))
+;;(setq dashboard-center-content t)
+;;(setq dashboard-banner-logo-title "Welcom to Emacs!")
+;;(setq dashboard-startup-banner 'logo)
+;;(setq dashboard-show-shortcuts t)
+;;(setq dashboard-banner-length 100)
+;;(setq dashboard-init-info "さっさとコード書け")
+;;(setq dashboard-icon-type 'all-the-icons)
+;;(setq dashboard-set-heading-icons t)
+;;(setq dashboard-set-file-icons t)
+;;(setq dashboard-set-navigator t)
+;;(setq dashboard-set-init-info t)
+;;(setq dashboard-set-footer nil)
+;;(setq dashboard-items '(
+;;                        (recents  . 5)
+;;                        ;;(bookmarks . 5)
+;;                        (projects . 5)
+;;                        (agenda . 5)
+;;                        ;;(registers . 5)
+;;                        ))
+;;(dashboard-setup-startup-hook)
+
+
 
 
 ;; python
