@@ -460,10 +460,10 @@
   :ensure t
   :bind (("C-s" . swiper)))
 ;;ivyをリッチに
-(use-package ivy-rich
-  :ensure t
-  :init
-  (ivy-rich-mode 1))
+;;(use-package ivy-rich
+;;  :ensure t
+;;  :init
+;;  (ivy-rich-mode 1))
 ;;ivyをフレーム表示
 (use-package ivy-posframe
   :ensure t
