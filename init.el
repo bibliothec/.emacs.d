@@ -460,16 +460,19 @@
   :ensure t
   :bind (("C-s" . swiper)))
 ;;ivyをリッチに
-;;(use-package ivy-rich
-;;  :ensure t
-;;  :init
-;;  (ivy-rich-mode 1))
-;;ivyをフレーム表示
-(use-package ivy-posframe
+(use-package all-the-icons-ivy-rich
   :ensure t
-  :config
-  (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-center)))
-  (ivy-posframe-mode 1))
+  :init (all-the-icons-ivy-rich-mode 1))
+(use-package ivy-rich
+  :ensure t
+  :init
+  (ivy-rich-mode 1))
+;;ivyをフレーム表示
+;;(use-package ivy-posframe
+;;  :ensure t
+;;  :config
+;;  (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-center)))
+;;  (ivy-posframe-mode 1))
 
 ;;現在のウィンドウをズーム(minimapも拡大されてしまう問題)
 ;;(use-package zoom
