@@ -288,11 +288,10 @@
   :ensure t)
 (load-theme 'gruvbox t)
 
-
-
 ;;icon
 (use-package all-the-icons
     :ensure t)
+
 
 ;; modeline
 (use-package powerline
@@ -300,10 +299,16 @@
  :config
  (powerline-center-evil-theme))
 
+(use-package doom-modeline
+  :ensure t
+  :init (doom-modeline-mode 1))
+
 (use-package powerline-evil
  :ensure t
- :config
+ :init
  (powerline-evil-vim-theme))
+
+
 
 
 
