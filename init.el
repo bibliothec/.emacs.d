@@ -63,7 +63,7 @@
 ;; スクロールバーを表示
 (setq scroll-bar-mode t)
 ;; 現在行の強調:
-(global-hl-line-mode t)
+;;(global-hl-line-mode t)
 ;;タブ文字の削除
 (setq-default indent-tabs-mode nil)
 ;;タブの大きさを指定
@@ -126,24 +126,13 @@
       (unless (file-exists-p dir)
         (make-directory dir t)))))
 
-
-;;バックグラウンドの色を変える
-;;(set-face-background 'default "#303030")
-;;色は#303030の部分を変えることで他の色に変更可能。
-
-;;(set-face-foreground 'default "#f5f5f5")
-
 ;; , を入力したらスペース追加
 (global-set-key (kbd ",") (lambda () (interactive) (insert ", ")))
-
-
 
 ;; Make Alt+n behave like C-↓
 (global-set-key (kbd "M-n") (kbd "<C-down>"))
 ;; Make Alt+p behave like C-↑
 (global-set-key (kbd "M-p") (kbd "<C-up>"))
-
-
 
 
 ;; use-packageのインストール(パッケージの自動インストールのため)
@@ -158,11 +147,6 @@
 ;;(global-set-key (kbd "C-j") 'toggle-input-method)
 ;;日本語を使えるようにする(上の設定とセットでするべき？)
 (set-language-environment "Japanese")
-
-
-
-
-
 
 ;;パケージの自動インストール
 (use-package lsp-mode
@@ -291,6 +275,13 @@
 ;;icon
 (use-package all-the-icons
     :ensure t)
+
+;;バックグラウンドの色を変える
+;;(set-face-background 'default "#303030")
+;;色は#303030の部分を変えることで他の色に変更可能。
+
+;;(set-face-foreground 'default "#f5f5f5")
+(set-face-attribute 'region nil :background "#666" :foreground "#ffffff")
 
 
 ;; modeline
@@ -461,9 +452,9 @@
   (global-set-key (kbd "C-c f") 'counsel-git)
   (global-set-key (kbd "C-c g") 'counsel-git-grep))
 ;;文字列検索
-(use-package swiper
-  :ensure t
-  :bind (("C-s" . swiper)))
+;;(use-package swiper
+;;  :ensure t
+;;  :bind (("C-s" . swiper)))
 ;;ivyをリッチに
 (use-package all-the-icons-ivy-rich
   :ensure t
@@ -629,6 +620,14 @@
 (when (eq system-type 'windows-nt)
   ;; Windows専用の設定をここに書く
   (setq multi-term-program "powershell.exe")
+  (set-face-attribute 'default nil 
+                      :family "Consolas"
+                      :height 100 
+                      :width 'normal) 
+  (set-fontset-font t 'japanese-jisx0208 (font-spec :family "Meiryo UI"))
+  (add-hook 'window-setup-hook 
+            (lambda () (set-fontset-font t 'japanese-jisx0208 (font-spec :family "Meiryo UI" 
+                                                                         :width 'normal))))
   )
 
 ;; macOSの場合の設定
@@ -641,8 +640,14 @@
      ;; Linux専用の設定をここに書く
     ;; 日本語フォントを設定
     (set-face-attribute 'default nil 
-                    :font "Noto Sans Mono CJK JP-12"
-                    :width 'expanded)
+                    :family "Noto Sans Mono CJK JP"
+                    :height 150
+                    :weight 'Medium
+                    :width 'normal)
+    (set-face-attribute 'default nil
+                      :family "Hack"
+                      :weight 'normal
+                      :height 150)
  
     ;;システムパスを与える
     (use-package exec-path-from-shell
