@@ -428,41 +428,41 @@
 
 
 ;;補完インターフェース
-(use-package ivy
-  :ensure t
-  :diminish ivy-mode
-  :config
-  (ivy-mode 1))
-(setq ivy-use-virtual-buffers nil)
-(setq enable-recursive-minibuffers t)
-(setq ivy-use-selectable-prompt t)
-(setq ivy-re-builders-alist 
-        '((swiper . ivy--regex-plus)
-        (t      . ivy--regex-fuzzy)))
-(setq ivy-re-builders-alist
-      '((t . ivy--regex-ignore-order)))
+;;(use-package ivy
+;;  :ensure t
+;;  :diminish ivy-mode
+;;  :config
+;;  (ivy-mode 1))
+;;(setq ivy-use-virtual-buffers nil)
+;;(setq enable-recursive-minibuffers t)
+;;(setq ivy-use-selectable-prompt t)
+;;(setq ivy-re-builders-alist 
+;;        '((swiper . ivy--regex-plus)
+;;        (t      . ivy--regex-fuzzy)))
+;;(setq ivy-re-builders-alist
+;;      '((t . ivy--regex-ignore-order)))
 ;;ivyのプリセット
-(use-package counsel
-  :ensure t
-  :config
-  (ivy-mode 1)
-  (global-set-key (kbd "M-x") 'counsel-M-x)
-  (global-set-key (kbd "C-x C-f") 'counsel-find-file)
-  (global-set-key (kbd "C-x b") 'counsel-switch-buffer)
-  (global-set-key (kbd "C-c f") 'counsel-git)
-  (global-set-key (kbd "C-c g") 'counsel-git-grep))
+;;(use-package counsel
+;;  :ensure t
+;;  :config
+;;  (ivy-mode 1)
+;;  (global-set-key (kbd "M-x") 'counsel-M-x)
+;;  (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+;;  (global-set-key (kbd "C-x b") 'counsel-switch-buffer)
+;;  (global-set-key (kbd "C-c f") 'counsel-git)
+;;  (global-set-key (kbd "C-c g") 'counsel-git-grep))
 ;;文字列検索
 ;;(use-package swiper
 ;;  :ensure t
 ;;  :bind (("C-s" . swiper)))
 ;;ivyをリッチに
-(use-package all-the-icons-ivy-rich
-  :ensure t
-  :init (all-the-icons-ivy-rich-mode 1))
-(use-package ivy-rich
-  :ensure t
-  :init
-  (ivy-rich-mode 1))
+;;(use-package all-the-icons-ivy-rich
+;;  :ensure t
+;;  :init (all-the-icons-ivy-rich-mode 1))
+;;(use-package ivy-rich
+;;  :ensure t
+;;  :init
+;;  (ivy-rich-mode 1))
 ;;ivyをフレーム表示
 ;;(use-package ivy-posframe
 ;;  :ensure t
