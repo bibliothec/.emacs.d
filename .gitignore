@@ -1,0 +1,14 @@
+/etc
+/url
+/auto-save-list
+*.dat
+*.data
+*.eld
+recentf
+/eshell
+/elpa
+/var
+/skk-get-jisyo
+/transient
+/.cache
+.lsp-session-v1
