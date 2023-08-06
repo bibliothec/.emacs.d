@@ -25,7 +25,7 @@
 ;;タブバーモードオン
 (tab-bar-mode 1)
 ;; 行間
-(setq-default line-spacing 0)
+(setq-default line-spacing 6)
 ; yes-or-no-pをy/nで選択できるようにする
 (defalias 'yes-or-no-p 'y-or-n-p)
 ;;括弧を補完
@@ -68,7 +68,7 @@
 ;;タブ文字の削除
 (setq-default indent-tabs-mode nil)
 ;;タブの大きさを指定
-(setq-default default-tab-width 4)
+(setq-default tab-width 4)
 ;;初期画面でwelcome画面の表示を消す方法
 (setq inhibit-startup-message t)
 ;; scratchの初期メッセージ消去
@@ -151,9 +151,33 @@
     (let ((tab-id (car tab-info)))
       (tab-bar-close-tab tab-id))))
 ;; キーバインドの設定
-(global-set-key (kbd "C-t") 'my-create-new-tab) ; Ctrl+tでタブを作成
-(global-set-key (kbd "C-w") 'my-delete-tab)     ; Ctrl+wでタブを削除
+(global-set-key (kbd "C-S-t") 'my-create-new-tab) ; Ctrl+tでタブを作成
+(global-set-key (kbd "C-S-w") 'my-delete-tab)     ; Ctrl+wでタブを削除
 
+;; バックスペースでスペースすべて削除
+(defun my-delete-backward-char (arg)
+  "Delete backward ARG characters.
+If the character at point is a space and the preceding characters are also spaces,
+delete all consecutive spaces at point with one backspace.
+Otherwise, delete one character backward."
+  (interactive "p")
+  (if (eq (char-before) ?\ )
+      (save-excursion
+        (while (eq (char-before) ?\ )
+          (delete-char -1)))
+    (delete-backward-char arg)))
+;; バックスペースキーにカスタム関数を割り当てる
+(global-set-key (kbd "<backspace>") 'my-delete-backward-char)
+
+;; 全角スペースが入力できないように
+(defun my-convert-space ()
+  "Convert full-width space to half-width space if the last command was not a space."
+  (interactive)
+  (when (eq last-command-event ?　) ; 全角スペース（U+3000）を表すキーコード
+    (let ((inhibit-read-only t))
+      (delete-char -1) ; 全角スペースを削除
+      (insert " "))))   ; 半角スペースを挿入
+(add-hook 'pre-command-hook 'my-convert-space)
 
 ;; use-packageのインストール(パッケージの自動インストールのため)
 (unless (package-installed-p 'use-package)
@@ -162,6 +186,19 @@
 ;; use-packageを有効化する
 (eval-when-compile
   (require 'use-package))
+;; Straightを使うための設定
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 6))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
 ;Ctrl-jで、日本語入力を可能にする(takadaqのみ)
 ;;(global-set-key (kbd "C-j") 'toggle-input-method)
@@ -189,21 +226,92 @@
 (setq lsp-headerline-breadcrumb-enable t)
 (add-hook 'lsp-mode-hook 'lsp-ui-mode)
 
-;; company(補完)
-(use-package company
-  :ensure t)
-(require 'company)
-(global-company-mode t)
-(setq company-idle-delay 0)
-(setq company-minimum-prefix-length 1)
-(setq company-selection-wrap-around t)
-(setq completion-ignore-case t)
-;; 基本的に候補は無選択状態から始める。
-;; 誤って確定してしまうのを防ぐ。
-;;(setq-default company-selection-default nil)
-(define-key company-active-map (kbd "C-n") 'company-select-next)
-(define-key company-active-map (kbd "C-p") 'company-select-previous)
-(define-key company-active-map (kbd "C-s") 'company-filter-candidates)
+;;;; company(補完)
+;;(use-package company
+;;  :ensure t)
+;;(require 'company)
+;;(global-company-mode t)
+;;(setq company-idle-delay 0)
+;;(setq company-minimum-prefix-length 2)
+;;(setq company-selection-wrap-around t)
+;;(setq completion-ignore-case t)
+;;(define-key company-active-map (kbd "C-n") 'company-select-next)
+;;(define-key company-active-map (kbd "C-p") 'company-select-previous)
+;;(define-key company-active-map (kbd "C-s") 'company-filter-candidates)
+;;  (setq company-transformers '(company-sort-by-occurrence company-sort-by-backend-importance)) ;; 利用頻度が高いものを候補の上に表示する
+;;(use-package company-statistics
+;;  :ensure t
+;;  :init
+;;  (company-statistics-mode))
+;;;; auto-completeに近い挙動で候補の絞り込みができる
+;;(use-package company-dwim
+;;  :straight '(company-dwim
+;;              :type git
+;;              :host github
+;;              :repo "zk-phi/company-dwim")
+;;  :ensure t
+;;  :init
+;;  (define-key company-active-map (kbd "TAB") 'company-dwim)
+;;  (setq company-frontends
+;;      '(company-pseudo-tooltip-unless-just-one-frontend
+;;        company-dwim-frontend
+;;        company-echo-metadata-frontend)))
+;;;; カーソルの位置がどこであってもcompanyを起動できる
+;;(use-package company-anywhere
+;;  :straight '(company-anywhere
+;;              :type git
+;;              :host github
+;;              :repo "zk-phi/company-anywhere")
+;;  :ensure t)
+;;;; プログラムの関数、変数のキーワード補完を強化
+;;(use-package company-same-mode-buffers
+;;  :straight '(company-same-mode-buffers
+;;              :type git
+;;              :host github
+;;              :repo "zk-phi/company-same-mode-buffers")
+;;  :after company
+;;  :ensure t
+;;  :init
+;;  (require 'company-same-mode-buffers)
+;;  (company-same-mode-buffers-initialize)
+;;  ;;
+;;  :config
+;;  (setq company-backends
+;;        '((company-capf :with company-same-mode-buffers)
+;;          (company-dabbrev-code :with company-same-mode-buffers)
+;;          company-keywords
+;;          company-files
+;;          company-dabbrev)))
+(use-package corfu
+  ;; TAB-and-Go customizations
+  :ensure t
+  :custom
+  (corfu-cycle t)           ;; Enable cycling for `corfu-next/previous'
+  (corfu-preselect 'prompt) ;; Always preselect the prompt
+  ;; Use TAB for cycling, default is `corfu-complete'.
+  :bind
+  (:map corfu-map
+        ("TAB" . corfu-next)
+        ([tab] . corfu-next)
+        ("S-TAB" . corfu-previous)
+        ([backtab] . corfu-previous))
+  :init
+  (global-corfu-mode))
+(setq corfu-cycle t) ;; 候補の最初と最後を行き来出来るようにする。
+(setq corfu-auto t) ;; 自動的に補完候補を出す。
+;;(setq corfu-preselect-first t) ;; ×自動的に最初の候補を選択する。
+(setq corfu-preselect 'prompt) ;; 最初の候補を選択しない。誤入力が多すぎるので。
+;; 無選択時のRETはquitだけでなく改行もする。
+(defun my-corfu-insert-or-newline ()
+  (interactive)
+  (if (>= corfu--index 0)
+      (corfu--insert 'finished)
+    (corfu-quit)
+    (newline)))
+(with-eval-after-load "corfu"
+  (define-key corfu-map (kbd "RET") 'my-corfu-insert-or-newline))
+(global-corfu-mode)
+
 
 ;;tmuxライク
 (use-package ace-window
@@ -236,6 +344,7 @@
   :ensure t
   :after ddskk
   :hook (skk-mode . ddskk-posframe-mode))
+
 
 ;; vim(c-zで切り替え)
 (use-package evil
