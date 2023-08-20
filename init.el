@@ -212,16 +212,14 @@ Otherwise, delete one character backward."
 (require 'lsp-mode)
 (setq gc-cons-threshold 100000000)
 (setq read-process-output-max (* 1024 1024))
-(setq lsp-completion-provider :capf)
-(setq lsp-idle-delay 0.500)
-(require 'lsp-ui)
-(setq lsp-ui-imenu-enable t)
-(setq lsp-headerline-breadcrumb-enable t)
+(setq lsp-completion-provider :none)
+(setq lsp-idle-delay 0)
 
 ;; lsp-ui
 (use-package lsp-ui
   :ensure t)
-(require 'lsp-ui)
+(require 'lsp-ui
+         )
 (setq lsp-ui-imenu-enable t)
 (setq lsp-headerline-breadcrumb-enable t)
 (add-hook 'lsp-mode-hook 'lsp-ui-mode)
@@ -355,6 +353,11 @@ Otherwise, delete one character backward."
 (setq evil-disable-insert-state-bindings t)
 ;; Emacs起動時にはemacsモードで開始する
 (setq evil-default-state 'emacs)
+;; メッセージバッファだけにevil-emacs-stateを明示的に適用
+(defun my-setup-evil ()
+  (when (string= mode-name "Messages")
+    (evil-emacs-state)))
+(add-hook 'after-change-major-mode-hook #'my-setup-evil)
 ;; terminalを開いたときにevilのinsertにならないように
 (evil-set-initial-state 'term-mode 'emacs)
 (add-to-list 'evil-emacs-state-modes 'term-mode)
@@ -364,6 +367,7 @@ Otherwise, delete one character backward."
       evil-emacs-state-tag    (propertize " E " 'face '((:background "orange" :foreground "black")))
       evil-insert-state-tag   (propertize " I " 'face '((:background "red") :foreground "white"))
       evil-motion-state-tag   (propertize " M " 'face '((:background "blue") :foreground "white")))
+(evil-mode 1)
 
 ;;マルチターミナル
 (use-package multi-term
@@ -416,15 +420,15 @@ Otherwise, delete one character backward."
  :ensure t
  :config
  (powerline-center-evil-theme))
-
-(use-package doom-modeline
-  :ensure t
-  :init (doom-modeline-mode 1))
-
+;;
+;;(use-package doom-modeline
+;;  :ensure t
+;;  :init (doom-modeline-mode 1))
 (use-package powerline-evil
  :ensure t
  :init
  (powerline-evil-vim-theme))
+
 
 ;; minimap
 (use-package minimap
@@ -466,7 +470,13 @@ Otherwise, delete one character backward."
     :custom
     (beacon-color "yellow")
     :config
+    (setq beacon-blink-when-window-scrolls nil
+        beacon-blink-when-window-changes t
+        beacon-blink-when-point-moves nil)
     (beacon-mode 1))
+
+
+
 
 ;;git操作
 (use-package magit
@@ -504,11 +514,41 @@ Otherwise, delete one character backward."
   :ensure t
   :hook (prog-mode . flycheck-mode))
 
+;; コードの折りたたみ
+;;todo
+
 
 ;;カッコの補完
 (use-package smartparens
   :ensure t
-  :hook (after-init . smartparens-global-strict-mode) ; strictモードを有効化
+  :bind (
+         :map smartparens-mode-map
+              ("C-M-a" . sp-beginning-of-sexp)              ;; カーソルが括弧の中か上にある場合、括弧の先頭に移動
+              ("C-M-e" . sp-end-of-sexp)                    ;; カーソルが括弧の中か上にある場合、括弧の最後に移動
+              ;; ("C-M-d" . sp-down-sexp)          ;; 現在いる括弧の中にさらにネストした括弧がある場合その括弧に移動
+              ;; ("C-M-u" . sp-up-sexp)            ;; 現在いる括弧の外の閉じ括弧に移動
+              ;; ("C-M-w" . sp-backward-down-sexp) ;; カーソルから見て後ろにネストした括弧がある場合は、そのネストに入っていく
+              ;; ("C-M-q" . sp-backward-up-sexp)   ;; カーソルより後ろに上位の括弧がある場合はその上位の括弧に移動する
+              ("C-M-f" . sp-forward-symbol)     ;; 次のシンボルへざっくり移動する。M-f良いような気がする。
+              ("C-M-b" . sp-backward-symbol)    ;; 前のシンボルへざっくり移動する。M-bで良いような気がする。
+              ;; ("C-M-n" . sp-next-sexp)          ;; 現在のカーソルがある階層で次の括弧へ移動する
+              ;; ("C-M-p" . sp-previous-sexp)      ;; 現在のカーソルがある階層で前の括弧へ移動する
+              ("C-s-f" . sp-forward-sexp)                   ;; カーソルからの次の括弧へ移動する。
+              ("C-s-b" . sp-backward-sexp)                  ;; カーソルからの前の括弧へ移動する。
+
+              ;; カーソルがある位置のワードをその括弧で囲う
+              ("C-c ("  . wrap-with-parens)
+              ("C-c ["  . wrap-with-brackets)
+              ("C-c {"  . wrap-with-braces)
+              ("C-c '"  . wrap-with-single-quotes) ;; lisp-modeではシングルクオーはテキストではなく変数のオブジェクト化で使われるので、利用できない
+              ("C-c \"" . wrap-with-double-quotes)
+
+              ;;          ;;("M-<" . sp-backward-unwrap-sexp)  ;; input系のM-[プレフィックスにぶつかり、予期せない挙動が出るのでショートカットを変更する。
+              ("M-]" . sp-unwrap-sexp) ;; 現在のカーソルがる位置の括弧を解除する
+              ;;          ("C-<right>" . sp-forward-slurp-sexp) ;; 括弧が囲む範囲を右に拡張する
+              ;;          ("C-<left>" . sp-forward-barf-sexp) ;; 括弧が囲む範囲を左に縮小する。
+              ("M-k" . sp-kill-sexp)) ;; ざっくり括弧の範囲を削
+  :hook (after-init . smartparens-global-mode) ; モードを有効化
   :config (require 'smartparens-config)
   :custom (electric-pair-mode nil)) ; electirc-pair-modeを無効化
 
@@ -518,22 +558,31 @@ Otherwise, delete one character backward."
   :hook (prog-mode . rainbow-delimiters-mode))
 
 ;;スペースの強調
-(use-package whitespace
-  :ensure t
-  :hook (prog-mode . whitespace-mode)
-  :custom
-  (whitespace-style '(face trailing tabs spaces empty space-mark tab-mark))
-  (whitespace-line-column 80))
+;;(use-package whitespace
+;;  :ensure t
+;;  :hook (prog-mode . whitespace-mode)
+;;  :custom
+;;  (whitespace-style '(face trailing tabs spaces empty space-mark tab-mark))
+;;  (whitespace-line-column 80))
 
 
 ;;インデントの強調
-(use-package highlight-indent-guides
+;;(use-package highlight-indent-guides
+;;  :ensure t
+;;  :hook (prog-mode . highlight-indent-guides-mode)
+;;  :custom
+;;  (highlight-indent-guides-method 'column)
+;;  (highlight-indent-guides-responsive 'top)
+;;  (highlight-indent-guides-delay 0))
+;;(use-package indent-guide
+;;  :ensure t
+;;  :config
+;;  (indent-guide-global-mode))
+;;(setq indent-guide-recursive t)
+(use-package highlight-indentation
   :ensure t
-  :hook (prog-mode . highlight-indent-guides-mode)
-  :custom
-  (highlight-indent-guides-method 'column)
-  (highlight-indent-guides-responsive 'top)
-  (highlight-indent-guides-delay 0.1))
+  :config
+  (add-hook 'prog-mode-hook 'highlight-indentation-mode))
 
 ;;コメントアウトの拡張
 (use-package comment-dwim-2
@@ -780,7 +829,6 @@ Otherwise, delete one character backward."
 
     (setq multi-term-program "/bin/bash")
   )
-
 
 
 
